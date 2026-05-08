@@ -1,0 +1,86 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+
+    var totalVenues = ViewBag.TotalVenues ?? 0;
+    var totalEvents = ViewBag.TotalEvents ?? 0;
+    var totalBookings = ViewBag.TotalBookings ?? 0;
+}
+
+<div class="dashboard-header">
+    <div>
+        <h1><i class="bi bi-speedometer2"></i> Dashboard</h1>
+    </div>
+
+    <div class="dashboard-user">
+        Welcome, Booking Specialist
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="summary-card bg-primary text-white">
+            <div>
+                <h6>Total Venues</h6>
+                <h2>@totalVenues</h2>
+                <a asp-controller="Venues" asp-action="Index">View all venues →</a>
+            </div>
+            <i class="bi bi-building summary-icon"></i>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="summary-card bg-success text-white">
+            <div>
+                <h6>Total Events</h6>
+                <h2>@totalEvents</h2>
+                <a asp-controller="Events" asp-action="Index">View all events →</a>
+            </div>
+            <i class="bi bi-calendar3 summary-icon"></i>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="summary-card bg-warning text-dark">
+            <div>
+                <h6>Total Bookings</h6>
+                <h2>@totalBookings</h2>
+                <a asp-controller="Bookings" asp-action="Index">View all bookings →</a>
+            </div>
+            <i class="bi bi-card-checklist summary-icon"></i>
+        </div>
+    </div>
+</div>
+
+<h4 class="mb-3">Quick Actions</h4>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="quick-card">
+            <i class="bi bi-building-fill-add text-primary quick-icon"></i>
+            <h5>Manage Venues</h5>
+            <p>Add, edit, or remove venues from the system.</p>
+            <a asp-controller="Venues" asp-action="Create" class="btn btn-primary btn-sm">+ Add Venue</a>
+            <a asp-controller="Venues" asp-action="Index" class="btn btn-outline-primary btn-sm">View All</a>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="quick-card">
+            <i class="bi bi-calendar-plus text-success quick-icon"></i>
+            <h5>Manage Events</h5>
+            <p>Schedule events and assign venues when available.</p>
+            <a asp-controller="Events" asp-action="Create" class="btn btn-success btn-sm">+ Add Event</a>
+            <a asp-controller="Events" asp-action="Index" class="btn btn-outline-success btn-sm">View All</a>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="quick-card">
+            <i class="bi bi-journal-plus text-warning quick-icon"></i>
+            <h5>Manage Bookings</h5>
+            <p>Create and manage venue bookings for customers.</p>
+            <a asp-controller="Bookings" asp-action="Create" class="btn btn-warning btn-sm">+ New Booking</a>
+            <a asp-controller="Bookings" asp-action="Index" class="btn btn-outline-warning btn-sm">View All</a>
+        </div>
+    </div>
+</div>

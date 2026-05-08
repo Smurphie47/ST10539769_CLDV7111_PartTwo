@@ -1,0 +1,71 @@
+﻿@model EventEaseApplication.Models.Venue
+
+@{
+    ViewData["Title"] = "Edit Venue";
+}
+
+<h1>Edit Venue</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input type="hidden" asp-for="VenueId" />
+            <input type="hidden" asp-for="ImageUrl" />
+
+            <div class="form-group mb-3">
+                <label asp-for="VenueName" class="control-label"></label>
+                <input asp-for="VenueName" class="form-control" />
+                <span asp-validation-for="VenueName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Location" class="control-label"></label>
+                <input asp-for="Location" class="form-control" />
+                <span asp-validation-for="Location" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Capacity" class="control-label"></label>
+                <input asp-for="Capacity" class="form-control" />
+                <span asp-validation-for="Capacity" class="text-danger"></span>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <div class="mb-3">
+                    <p>Current Image:</p>
+                    <img src="@Model.ImageUrl"
+                         alt="@Model.VenueName"
+                         style="width:250px;height:150px;object-fit:cover;" />
+                </div>
+            }
+
+            <div class="form-group mb-3">
+                <label for="imageFile" class="control-label">Replace Venue Image</label>
+                <input type="file"
+                       name="imageFile"
+                       id="imageFile"
+                       class="form-control"
+                       accept=".jpg,.jpeg,.png,.webp,image/*" />
+                <small class="form-text text-muted">
+                    Leave empty to keep the current image.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

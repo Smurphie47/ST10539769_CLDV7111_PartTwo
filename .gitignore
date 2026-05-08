@@ -1,0 +1,16 @@
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Publish profiles can contain deployment details
+*.pubxml.user
+
+# Logs
+*.log
+
+# Local secrets
+secrets.json
