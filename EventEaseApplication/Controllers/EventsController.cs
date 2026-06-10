@@ -18,23 +18,68 @@ namespace EventEaseApplication.Controllers
             _imageService = imageService;
         }
 
-        public async Task<IActionResult> Index(string searchString)
+        public async Task<IActionResult> Index(
+            string? searchString,
+            int? eventTypeId,
+            int? venueId,
+            DateTime? startDate,
+            DateTime? endDate)
         {
             var events = _context.Events
                 .Include(e => e.Venue)
+                .Include(e => e.EventType)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchString))
             {
-                events = events.Where(e =>
-                    e.EventName.Contains(searchString) ||
-                    (e.Description != null && e.Description.Contains(searchString)) ||
-                    (e.Venue != null && e.Venue.VenueName.Contains(searchString)));
+                if (DateTime.TryParse(searchString, out DateTime searchedDate))
+                {
+                    events = events.Where(e => e.EventDate.Date == searchedDate.Date);
+                }
+                else
+                {
+                    events = events.Where(e =>
+                        e.EventName.Contains(searchString) ||
+                        (e.Description != null && e.Description.Contains(searchString)) ||
+                        (e.Venue != null && e.Venue.VenueName.Contains(searchString)) ||
+                        (e.EventType != null && e.EventType.Name.Contains(searchString)));
+                }
+            }
+
+            if (eventTypeId.HasValue)
+            {
+                events = events.Where(e => e.EventTypeId == eventTypeId.Value);
+            }
+
+            if (venueId.HasValue)
+            {
+                events = events.Where(e => e.VenueId == venueId.Value);
+            }
+
+            if (startDate.HasValue)
+            {
+                events = events.Where(e => e.EventDate.Date >= startDate.Value.Date);
+            }
+
+            if (endDate.HasValue)
+            {
+                events = events.Where(e => e.EventDate.Date <= endDate.Value.Date);
             }
 
             ViewData["CurrentFilter"] = searchString;
+            ViewData["SelectedEventTypeId"] = eventTypeId;
+            ViewData["SelectedVenueId"] = venueId;
+            ViewData["StartDate"] = startDate?.ToString("yyyy-MM-dd");
+            ViewData["EndDate"] = endDate?.ToString("yyyy-MM-dd");
 
-            return View(await events.ToListAsync());
+            ViewData["EventTypeId"] = new SelectList(_context.EventTypes, "EventTypeId", "Name", eventTypeId);
+            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", venueId);
+
+            var result = await events
+                .OrderBy(e => e.EventDate)
+                .ToListAsync();
+
+            return View(result);
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -46,6 +91,7 @@ namespace EventEaseApplication.Controllers
 
             var ev = await _context.Events
                 .Include(e => e.Venue)
+                .Include(e => e.EventType)
                 .FirstOrDefaultAsync(e => e.EventId == id);
 
             if (ev == null)
@@ -59,6 +105,8 @@ namespace EventEaseApplication.Controllers
         public IActionResult Create()
         {
             ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName");
+            ViewData["EventTypeId"] = new SelectList(_context.EventTypes, "EventTypeId", "Name");
+
             return View();
         }
 
@@ -91,6 +139,8 @@ namespace EventEaseApplication.Controllers
             }
 
             ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", ev.VenueId);
+            ViewData["EventTypeId"] = new SelectList(_context.EventTypes, "EventTypeId", "Name", ev.EventTypeId);
+
             return View(ev);
         }
 
@@ -109,6 +159,8 @@ namespace EventEaseApplication.Controllers
             }
 
             ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", ev.VenueId);
+            ViewData["EventTypeId"] = new SelectList(_context.EventTypes, "EventTypeId", "Name", ev.EventTypeId);
+
             return View(ev);
         }
 
@@ -170,6 +222,8 @@ namespace EventEaseApplication.Controllers
             }
 
             ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", ev.VenueId);
+            ViewData["EventTypeId"] = new SelectList(_context.EventTypes, "EventTypeId", "Name", ev.EventTypeId);
+
             return View(ev);
         }
 
@@ -182,6 +236,7 @@ namespace EventEaseApplication.Controllers
 
             var ev = await _context.Events
                 .Include(e => e.Venue)
+                .Include(e => e.EventType)
                 .FirstOrDefaultAsync(e => e.EventId == id);
 
             if (ev == null)

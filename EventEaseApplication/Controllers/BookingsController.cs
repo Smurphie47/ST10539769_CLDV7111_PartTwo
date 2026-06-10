@@ -1,5 +1,4 @@
-﻿
-using EventEaseApplication.Data;
+﻿using EventEaseApplication.Data;
 using EventEaseApplication.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -16,7 +15,12 @@ namespace EventEaseApplication.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index(string searchString)
+        public async Task<IActionResult> Index(
+            string? searchString,
+            int? venueId,
+            DateTime? startDate,
+            DateTime? endDate,
+            DateTime? availabilityDate)
         {
             var bookings = _context.Bookings
                 .Include(b => b.Event)
@@ -25,16 +29,75 @@ namespace EventEaseApplication.Controllers
 
             if (!string.IsNullOrWhiteSpace(searchString))
             {
-                bookings = bookings.Where(b =>
-                    b.BookingId.ToString().Contains(searchString) ||
-                    b.BookingDate.ToString().Contains(searchString) ||
-                    (b.Event != null && b.Event.EventName.Contains(searchString)) ||
-                    (b.Venue != null && b.Venue.VenueName.Contains(searchString)));
+                if (int.TryParse(searchString, out int bookingId))
+                {
+                    bookings = bookings.Where(b => b.BookingId == bookingId);
+                }
+                else if (DateTime.TryParse(searchString, out DateTime searchedDate))
+                {
+                    bookings = bookings.Where(b => b.BookingDate.Date == searchedDate.Date);
+                }
+                else
+                {
+                    bookings = bookings.Where(b =>
+                        (b.Event != null && b.Event.EventName.Contains(searchString)) ||
+                        (b.Venue != null && b.Venue.VenueName.Contains(searchString)));
+                }
+            }
+
+            if (venueId.HasValue)
+            {
+                bookings = bookings.Where(b => b.VenueId == venueId.Value);
+            }
+
+            if (startDate.HasValue)
+            {
+                bookings = bookings.Where(b => b.BookingDate.Date >= startDate.Value.Date);
+            }
+
+            if (endDate.HasValue)
+            {
+                bookings = bookings.Where(b => b.BookingDate.Date <= endDate.Value.Date);
+            }
+
+            if (venueId.HasValue && availabilityDate.HasValue)
+            {
+                var venue = await _context.Venues.FindAsync(venueId.Value);
+
+                var isBooked = await _context.Bookings.AnyAsync(b =>
+                    b.VenueId == venueId.Value &&
+                    b.BookingDate.Date == availabilityDate.Value.Date);
+
+                if (venue != null)
+                {
+                    if (isBooked)
+                    {
+                        ViewData["AvailabilityMessage"] =
+                            $"{venue.VenueName} is NOT available on {availabilityDate.Value:yyyy-MM-dd}.";
+                        ViewData["AvailabilityClass"] = "alert-danger";
+                    }
+                    else
+                    {
+                        ViewData["AvailabilityMessage"] =
+                            $"{venue.VenueName} is available on {availabilityDate.Value:yyyy-MM-dd}.";
+                        ViewData["AvailabilityClass"] = "alert-success";
+                    }
+                }
             }
 
             ViewData["CurrentFilter"] = searchString;
+            ViewData["SelectedVenueId"] = venueId;
+            ViewData["StartDate"] = startDate?.ToString("yyyy-MM-dd");
+            ViewData["EndDate"] = endDate?.ToString("yyyy-MM-dd");
+            ViewData["AvailabilityDate"] = availabilityDate?.ToString("yyyy-MM-dd");
 
-            return View(await bookings.ToListAsync());
+            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", venueId);
+
+            var result = await bookings
+                .OrderByDescending(b => b.BookingDate)
+                .ToListAsync();
+
+            return View(result);
         }
 
         public async Task<IActionResult> Details(int? id)

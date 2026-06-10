@@ -28,6 +28,12 @@ namespace EventEaseApplication.Models
 
         public Venue? Venue { get; set; }
 
+        [Required]
+        [Display(Name = "Event Type")]
+        public int EventTypeId { get; set; }
+
+        public EventType? EventType { get; set; }
+
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     }
 }
